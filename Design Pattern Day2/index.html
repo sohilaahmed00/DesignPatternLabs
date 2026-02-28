@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Design Patterns Tasks</title>
+</head>
+
+<body>
+
+  <script>
+    console.log("========== TASK 1: DECORATOR (Teacher dynamic props) ==========");
+
+
+    class Teacher {
+      constructor(name) {
+        this.name = name;
+      }
+      getInfo() {
+        return { name: this.name };
+      }
+    }
+
+
+    class TeacherDecorator {
+      constructor(teacher) {
+        this.teacher = teacher;
+      }
+      getInfo() {
+        return this.teacher.getInfo();
+      }
+    }
+
+    class SalaryDecorator extends TeacherDecorator {
+      constructor(teacher, salary) {
+        super(teacher);
+        this.salary = salary;
+      }
+      getInfo() {
+        return { ...super.getInfo(), salary: this.salary };
+      }
+    }
+
+    class NationalityDecorator extends TeacherDecorator {
+      constructor(teacher, nationality) {
+        super(teacher);
+        this.nationality = nationality;
+      }
+      getInfo() {
+        return { ...super.getInfo(), nationality: this.nationality };
+      }
+    }
+
+    class StreetDecorator extends TeacherDecorator {
+      constructor(teacher, street) {
+        super(teacher);
+        this.street = street;
+      }
+      getInfo() {
+        return { ...super.getInfo(), street: this.street };
+      }
+    }
+
+
+    let t1 = new Teacher("Sohila");
+    t1 = new SalaryDecorator(t1, 9000);
+    t1 = new NationalityDecorator(t1, "Egyptian");
+    t1 = new StreetDecorator(t1, "Fayoum Street");
+
+    console.log(t1.getInfo());
+
+    console.log("\n========== TASK 2: PROXY (Countries cached or not) ==========");
+
+
+    class CountriesAPI {
+      fetchAll() {
+        console.log("Calling Real API...");
+        return ["Egypt", "USA", "Italy", "Spain"];
+      }
+    }
+
+
+    class CountriesServiceProxy {
+      constructor() {
+        this.api = new CountriesAPI();
+        this.savedData = null;
+      }
+
+      getAllCountries() {
+        if (this.savedData === null) {
+          console.log("No Cache Found ");
+          this.savedData = this.api.fetchAll();
+        } else {
+          console.log("Loaded From Cache ");
+        }
+
+        return this.savedData;
+      }
+    }
+
+    const countriesProxy = new CountriesServiceProxy();
+
+    console.log(countriesProxy.getAllCountries());
+    console.log(countriesProxy.getAllCountries());
+
+    console.log("\n========== TASK 3: BRIDGE (TV & Speaker share interface) ==========");
+
+
+    class TV {
+      increaseVolume() {
+        console.log("TV volume up");
+      }
+
+      decreaseVolume() {
+        console.log("TV volume down");
+      }
+
+      mute() {
+        console.log("TV muted");
+      }
+    }
+
+    class Speaker {
+      increaseVolume() {
+        console.log("Speaker volume up");
+      }
+
+      decreaseVolume() {
+        console.log("Speaker volume down");
+      }
+
+      mute() {
+        console.log("Speaker muted");
+      }
+    }
+
+
+    class Remote {
+      constructor(device) {
+        this.device = device;
+      }
+
+      volumeUp() {
+        this.device.increaseVolume();
+      }
+
+      volumeDown() {
+        this.device.decreaseVolume();
+      }
+    }
+
+    class SmartRemote extends Remote {
+      mute() {
+        this.device.mute();
+      }
+    }
+
+
+
+    const tv = new TV();
+    const speaker = new Speaker();
+
+    const remote1 = new Remote(tv);
+    remote1.volumeUp();
+    remote1.volumeDown();
+
+    const remote2 = new SmartRemote(speaker);
+    remote2.volumeUp();
+    remote2.mute();
+
+    console.log("\n========== TASK 4: COMPOSITE (Box of books, show hierarchy) ==========");
+
+
+    class Book {
+      constructor(title, pages) {
+        this.title = title;
+        this.pages = pages;
+      }
+
+      getPages() {
+        return this.pages;
+      }
+
+      show() {
+        console.log("Book:", this.title, "-", this.pages, "pages");
+      }
+    }
+
+
+    class Box {
+      constructor(name) {
+        this.name = name;
+        this.items = [];
+      }
+
+      add(item) {
+        this.items.push(item);
+      }
+
+      getPages() {
+        let total = 0;
+        for (let item of this.items) {
+          total += item.getPages();
+        }
+        return total;
+      }
+
+      show() {
+        console.log("Box:", this.name);
+        this.items.forEach(item => item.show());
+      }
+    }
+
+
+
+    const box = new Box("My Box");
+
+    box.add(new Book("Clean Code", 450));
+    box.add(new Book("JS Basics", 200));
+
+    const smallBox = new Box("Small Box");
+    smallBox.add(new Book("Design Patterns", 300));
+
+    box.add(smallBox);
+
+    box.show();
+    console.log("Total Pages =", box.getPages());
+
+    console.log("\n========== TASK 5: FACADE (Online Store tiny segment) ==========");
+
+
+    class Inventory {
+      check(id) {
+        console.log("Checking product:", id);
+        return true;
+      }
+    }
+
+    class Payment {
+      pay(amount) {
+        console.log("Paid:", amount);
+        return true;
+      }
+    }
+
+    class Shipping {
+      deliver(address) {
+        console.log("Delivered to:", address);
+      }
+    }
+
+
+
+    class Store {
+      constructor() {
+        this.inventory = new Inventory();
+        this.payment = new Payment();
+        this.shipping = new Shipping();
+      }
+
+      order(id, price, address) {
+        if (!this.inventory.check(id)) return;
+
+        if (!this.payment.pay(price)) return;
+
+        this.shipping.deliver(address);
+        console.log("Order completed ");
+      }
+    }
+
+
+
+    const store = new Store();
+    store.order("P-1", 100, "Cairo");
+
+    console.log("\n========== TASK 6: STATE (ToDo List behaviors) ==========");
+   
+    class State {
+      handle(task) { }
+    }
+
+    class InProgress extends State {
+      handle(task) {
+        console.log("Working on the task...");
+        task.changeState(new Review());
+      }
+    }
+
+    class Review extends State {
+      handle(task) {
+        console.log("Task is under review...");
+        task.changeState(new Done());
+      }
+    }
+
+    class Done extends State {
+      handle(task) {
+        console.log("Task finished successfully.");
+      }
+    }
+
+    class Task {
+      constructor() {
+        this.state = new InProgress();
+      }
+
+      changeState(newState) {
+        this.state = newState;
+      }
+
+      next() {
+        this.state.handle(this);
+      }
+    }
+
+
+
+    const myTask = new Task();
+
+    myTask.next();
+    myTask.next();
+    myTask.next();  
+  </script>
+</body>
+
+</html>
